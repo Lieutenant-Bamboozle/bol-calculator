@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bol.com Product ROI Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0c0d11;
+    --bg-card: #141620;
+    --bg-input: #1a1d2a;
+    --border: #252836;
+    --border-focus: #0066ff;
+    --text: #e2e4ea;
+    --text-dim: #7a7f92;
+    --text-muted: #4e5267;
+    --accent: #0066ff;
+    --accent-glow: rgba(0, 102, 255, 0.15);
+    --green: #00d68f;
+    --green-bg: rgba(0, 214, 143, 0.08);
+    --green-border: rgba(0, 214, 143, 0.2);
+    --red: #ff4d6a;
+    --red-bg: rgba(255, 77, 106, 0.08);
+    --red-border: rgba(255, 77, 106, 0.2);
+    --orange: #ff9f43;
+    --bol-blue: #0066ff;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* Header */
+  .header {
+    padding: 36px 20px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-db-btn {
+    margin-left: auto;
+    padding: 8px 16px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-dim);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .header-db-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .header-db-btn.connected { border-color: var(--green-border); color: var(--green); background: var(--green-bg); }
+
+  .header-logo {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0066ff, #0044cc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(0, 102, 255, 0.3);
+  }
+
+  .header h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .header p {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 860px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .card-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .card-header .card-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Inputs */
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    letter-spacing: 0.015em;
+  }
+
+  .field label .hint {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 0 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-wrap .prefix,
+  .input-wrap .suffix {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .input-wrap .prefix { margin-right: 6px; }
+  .input-wrap .suffix { margin-left: 6px; }
+
+  .input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 10px 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .input-wrap input::-webkit-inner-spin-button { opacity: 0; }
+  .input-wrap input:hover::-webkit-inner-spin-button { opacity: 1; }
+
+  /* Select */
+  .input-wrap select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 10px 0;
+    width: 100%;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .input-wrap select option {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    margin-bottom: 8px;
+  }
+
+  .toggle-label {
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+
+  .toggle {
+    width: 42px; height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    outline: none;
+  }
+
+  .toggle.active { background: var(--accent); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle.active::after { transform: translateX(18px); }
+
+  /* Results */
+  .results-panel {
+    grid-column: 1 / -1;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .kpi {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.3s;
+  }
+
+  .kpi.highlight {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .kpi.positive { border-color: var(--green-border); background: var(--green-bg); }
+  .kpi.negative { border-color: var(--red-border); background: var(--red-bg); }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.1;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Waterfall */
+  .waterfall {
+    margin-top: 20px;
+  }
+
+  .waterfall-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 100px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .waterfall-row:last-child { border-bottom: none; }
+
+  .waterfall-label {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .waterfall-bar-wrap {
+    height: 22px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .waterfall-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    min-width: 2px;
+  }
+
+  .waterfall-amount {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+    font-weight: 500;
+  }
+
+  /* Product comparison */
+  .product-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .product-tab {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .product-tab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .product-tab.add {
+    border-style: dashed;
+    color: var(--text-muted);
+  }
+
+  .product-tab.add:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .remove-btn {
+    margin-left: 8px;
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .remove-btn:hover { opacity: 1; }
+
+  /* Comparison Table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  .compare-table th,
+  .compare-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .compare-table th {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .compare-table td {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+  }
+
+  .compare-table .best {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .compare-table .worst {
+    color: var(--red);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 16px 0 12px;
+  }
+
+  /* Rank badges */
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  .rank-1 { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .rank-2 { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(0,102,255,0.2); }
+  .rank-3 { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+
+  /* Info callout */
+  .callout {
+    background: var(--accent-glow);
+    border: 1px solid rgba(0, 102, 255, 0.15);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+
+  .callout strong { color: var(--text); }
+
+  /* Timeline bar */
+  .timeline-bar {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 36px;
+    margin: 12px 0;
+  }
+
+  .timeline-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.7);
+    transition: width 0.4s ease;
+    min-width: 40px;
+    position: relative;
+  }
+
+  .timeline-segment .seg-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 6px;
+  }
+
+  .stock-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 12px;
+  }
+
+  .stock-status.ok {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    color: var(--green);
+  }
+
+  .stock-status.warning {
+    background: rgba(255,159,67,0.08);
+    border: 1px solid rgba(255,159,67,0.2);
+    color: var(--orange);
+  }
+
+  .stock-status.danger {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+  }
+
+  .mini-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .mini-stat:last-child { border-bottom: none; }
+
+  .mini-stat .ms-label { color: var(--text-dim); }
+
+  .mini-stat .ms-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* Database UI */
+  .db-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .db-bar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .db-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .db-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .db-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .db-dot.disconnected { background: var(--red); }
+  .db-dot.saving { background: var(--orange); animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+
+  .db-btn {
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+
+  .db-btn:hover { border-color: var(--accent); color: var(--text); }
+  .db-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .db-btn.primary:hover { background: #0055dd; }
+  .db-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  .db-session-name {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    padding: 5px 8px;
+    border-radius: 6px;
+    outline: none;
+    min-width: 140px;
+    transition: border-color 0.2s;
+  }
+
+  .db-session-name:hover, .db-session-name:focus {
+    border-color: var(--border);
+    background: var(--bg-input);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(10px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .modal .modal-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .modal-field {
+    margin-bottom: 14px;
+  }
+
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .modal-field input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    outline: none;
+  }
+
+  .modal-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  /* Session list */
+  .session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .session-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .session-item.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .session-item .si-name {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .session-item .si-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .session-item .si-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 2000;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast.success { background: var(--green); color: #000; }
+  .toast.error { background: var(--red); color: #fff; }
+  .toast.info { background: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">B</div>
+    <div>
+      <h1>Bol.com Product ROI Calculator</h1>
+      <p>Vergelijk producten en ontdek welke de beste return on investment geeft</p>
+    </div>
+    <button class="header-db-btn" id="headerDbBtn" onclick="openModal(dbState.connected ? 'loadModal' : 'setupModal')">
+      🔗 Database koppelen
+    </button>
+  </div>
+</div>
+
+<div class="container" id="app"></div>
+
+<!-- Database Toolbar -->
+<div class="db-bar" id="dbBar" style="display:none">
+  <div class="db-bar-inner">
+    <div class="db-status">
+      <div class="db-dot" id="dbDot"></div>
+      <span id="dbStatusText">Niet verbonden</span>
+    </div>
+    <input class="db-session-name" id="sessionNameInput" placeholder="Sessienaam..." value="Mijn berekening" onchange="dbState.sessionName = this.value">
+    <div style="display:flex;gap:6px;margin-left:auto">
+      <button class="db-btn primary" onclick="saveSession()">💾 Opslaan</button>
+      <button class="db-btn" onclick="openModal('loadModal')">📂 Laden</button>
+      <button class="db-btn" onclick="saveAsNew()">📋 Opslaan als nieuw</button>
+      <button class="db-btn" onclick="openModal('setupModal')">⚙️</button>
+    </div>
+  </div>
+</div>
+
+<!-- Setup Modal -->
+<div class="modal-overlay" id="setupModal" onclick="if(event.target===this)closeModal('setupModal')">
+  <div class="modal">
+    <h3>🔗 Database koppeling</h3>
+    <p class="modal-sub">Koppel je Supabase project om productgegevens op te slaan. Gratis account op <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a></p>
+    <div class="modal-field">
+      <label>Supabase Project URL</label>
+      <input id="setupUrl" placeholder="https://xxxxx.supabase.co" value="">
+    </div>
+    <div class="modal-field">
+      <label>Anon (public) Key</label>
+      <input id="setupKey" placeholder="eyJhbGciOiJIUzI1NiIs..." value="">
+    </div>
+    <div class="callout" style="margin-top:0;margin-bottom:16px">
+      <strong>Stap 1:</strong> Maak een gratis Supabase project aan<br>
+      <strong>Stap 2:</strong> Ga naar SQL Editor en voer het meegeleverde SQL-schema uit<br>
+      <strong>Stap 3:</strong> Kopieer URL en anon key van Settings → API
+    </div>
+    <div class="modal-actions">
+      <button class="db-btn" onclick="closeModal('setupModal')">Annuleren</button>
+      <button class="db-btn" onclick="testAndDisconnect()" id="disconnectBtn" style="display:none;color:var(--red);border-color:var(--red)">Ontkoppelen</button>
+      <button class="db-btn primary" onclick="connectSupabase()">Verbinden</button>
+    </div>
+  </div>
+</div>
+
+<!-- Load Modal -->
+<div class="modal-overlay" id="loadModal" onclick="if(event.target===this)closeModal('loadModal')">
+  <div class="modal">
+    <h3>📂 Opgeslagen berekeningen</h3>
+    <p class="modal-sub">Selecteer een berekening om te laden</p>
+    <div id="sessionList" style="margin-bottom:16px">
+      <div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Laden...</div>
+    </div>
+    <div class="modal-actions">
+      <button class="db-btn" onclick="closeModal('loadModal')">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==========================================
+// SUPABASE DATABASE INTEGRATION
+// ==========================================
+
+const dbState = {
+  url: localStorage.getItem('sb_url') || '',
+  key: localStorage.getItem('sb_key') || '',
+  connected: false,
+  currentSessionId: null,
+  sessionName: 'Mijn berekening',
+  saving: false,
+  autoSaveTimer: null,
+};
+
+// Toast notifications
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Modal helpers
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'loadModal' && dbState.connected) loadSessionList();
+  if (id === 'setupModal') {
+    document.getElementById('setupUrl').value = dbState.url;
+    document.getElementById('setupKey').value = dbState.key;
+    document.getElementById('disconnectBtn').style.display = dbState.connected ? 'inline-flex' : 'none';
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Supabase REST API helper
+async function sbFetch(path, method = 'GET', body = null) {
+  const headers = {
+    'apikey': dbState.key,
+    'Authorization': 'Bearer ' + dbState.key,
+    'Content-Type': 'application/json',
+    'Prefer': method === 'POST' ? 'return=representation' : (method === 'PATCH' ? 'return=representation' : ''),
+  };
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(dbState.url + '/rest/v1/' + path, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('Supabase error: ' + res.status + ' ' + err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// Connect to Supabase
+async function connectSupabase() {
+  const url = document.getElementById('setupUrl').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('setupKey').value.trim();
+  if (!url || !key) { showToast('Vul URL en Key in', 'error'); return; }
+
+  try {
+    // Test connection by querying the table
+    dbState.url = url;
+    dbState.key = key;
+    await sbFetch('calculator_sessions?select=id&limit=1');
+    
+    // Save credentials
+    localStorage.setItem('sb_url', url);
+    localStorage.setItem('sb_key', key);
+    dbState.connected = true;
+    
+    updateDbUI();
+    closeModal('setupModal');
+    showToast('Verbonden met database!', 'success');
+  } catch (e) {
+    dbState.connected = false;
+    updateDbUI();
+    console.error(e);
+    showToast('Verbinding mislukt. Controleer URL/Key en of het SQL-schema is uitgevoerd.', 'error');
+  }
+}
+
+function testAndDisconnect() {
+  localStorage.removeItem('sb_url');
+  localStorage.removeItem('sb_key');
+  dbState.url = '';
+  dbState.key = '';
+  dbState.connected = false;
+  dbState.currentSessionId = null;
+  updateDbUI();
+  closeModal('setupModal');
+  showToast('Ontkoppeld van database', 'info');
+}
+
+// Save current state to database
+async function saveSession() {
+  if (!dbState.connected) { openModal('setupModal'); return; }
+
+  dbState.saving = true;
+  updateDbUI();
+
+  const payload = {
+    name: dbState.sessionName || 'Mijn berekening',
+    global_budget: state.globalBudget,
+    products: state.products,
+  };
+
+  try {
+    if (dbState.currentSessionId) {
+      // Update existing
+      await sbFetch(
+        'calculator_sessions?id=eq.' + dbState.currentSessionId,
+        'PATCH',
+        payload
+      );
+      showToast('Opgeslagen!', 'success');
+    } else {
+      // Insert new
+      const data = await sbFetch('calculator_sessions', 'POST', payload);
+      if (data && data[0]) {
+        dbState.currentSessionId = data[0].id;
+      }
+      showToast('Nieuwe berekening opgeslagen!', 'success');
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Opslaan mislukt: ' + e.message, 'error');
+  }
+
+  dbState.saving = false;
+  updateDbUI();
+}
+
+// Save as new (always creates new record)
+async function saveAsNew() {
+  dbState.currentSessionId = null;
+  await saveSession();
+}
+
+// Load session list
+async function loadSessionList() {
+  const list = document.getElementById('sessionList');
+  list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Laden...</div>';
+
+  try {
+    const data = await sbFetch('calculator_sessions?select=id,name,global_budget,products,updated_at&order=updated_at.desc&limit=50');
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Nog geen opgeslagen berekeningen</div>';
+      return;
+    }
+
+    list.innerHTML = data.map(s => {
+      const productCount = Array.isArray(s.products) ? s.products.length : 0;
+      const date = new Date(s.updated_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const isActive = s.id === dbState.currentSessionId;
+      return `
+        <div class="session-item ${isActive ? 'active' : ''}" onclick="loadSession('${s.id}')">
+          <div>
+            <div class="si-name">${isActive ? '● ' : ''}${s.name}</div>
+            <div class="si-meta">${productCount} product(en) · Budget: €${Number(s.global_budget).toFixed(0)} · ${date}</div>
+          </div>
+          <div class="si-actions" onclick="event.stopPropagation()">
+            <button class="db-btn danger" onclick="deleteSession('${s.id}')" title="Verwijderen">🗑</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    console.error(e);
+    list.innerHTML = '<div style="text-align:center;color:var(--red);padding:20px;font-size:13px">Fout bij laden: ' + e.message + '</div>';
+  }
+}
+
+// Load a specific session
+async function loadSession(id) {
+  try {
+    const data = await sbFetch('calculator_sessions?id=eq.' + id + '&select=*');
+    if (!data || data.length === 0) { showToast('Sessie niet gevonden', 'error'); return; }
+
+    const s = data[0];
+    state.products = s.products || [defaultProduct(0)];
+    state.globalBudget = Number(s.global_budget) || 5000;
+    state.activeProduct = 0;
+    
+    dbState.currentSessionId = s.id;
+    dbState.sessionName = s.name;
+
+    closeModal('loadModal');
+    updateDbUI();
+    render();
+    showToast('Geladen: ' + s.name, 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('Laden mislukt: ' + e.message, 'error');
+  }
+}
+
+// Delete a session
+async function deleteSession(id) {
+  if (!confirm('Weet je zeker dat je deze berekening wilt verwijderen?')) return;
+
+  try {
+    await sbFetch('calculator_sessions?id=eq.' + id, 'DELETE');
+    if (id === dbState.currentSessionId) {
+      dbState.currentSessionId = null;
+    }
+    showToast('Verwijderd', 'info');
+    loadSessionList();
+  } catch (e) {
+    console.error(e);
+    showToast('Verwijderen mislukt: ' + e.message, 'error');
+  }
+}
+
+// Auto-save with debounce (2 seconds after last change)
+function triggerAutoSave() {
+  if (!dbState.connected || !dbState.currentSessionId) return;
+  clearTimeout(dbState.autoSaveTimer);
+  dbState.autoSaveTimer = setTimeout(() => {
+    saveSession();
+  }, 2000);
+}
+
+// Update database UI elements
+function updateDbUI() {
+  const bar = document.getElementById('dbBar');
+  const dot = document.getElementById('dbDot');
+  const statusText = document.getElementById('dbStatusText');
+  const nameInput = document.getElementById('sessionNameInput');
+
+  bar.style.display = 'flex';
+
+  if (dbState.saving) {
+    dot.className = 'db-dot saving';
+    statusText.textContent = 'Opslaan...';
+  } else if (dbState.connected) {
+    dot.className = 'db-dot connected';
+    statusText.textContent = dbState.currentSessionId ? 'Verbonden · Opgeslagen' : 'Verbonden';
+  } else {
+    dot.className = 'db-dot disconnected';
+    statusText.textContent = 'Niet verbonden';
+  }
+
+  nameInput.value = dbState.sessionName;
+
+  // Update header button
+  const hBtn = document.getElementById('headerDbBtn');
+  if (dbState.connected) {
+    hBtn.className = 'header-db-btn connected';
+    hBtn.innerHTML = '✓ Database verbonden';
+  } else {
+    hBtn.className = 'header-db-btn';
+    hBtn.innerHTML = '🔗 Database koppelen';
+  }
+}
+
+// Auto-connect on load if credentials exist
+async function autoConnect() {
+  if (dbState.url && dbState.key) {
+    try {
+      await sbFetch('calculator_sessions?select=id&limit=1');
+      dbState.connected = true;
+    } catch(e) {
+      dbState.connected = false;
+    }
+  }
+  updateDbUI();
+
+  // Show setup prompt if not connected
+  if (!dbState.connected) {
+    document.getElementById('dbBar').style.display = 'flex';
+  }
+}
+
+// Initialize on load
+setTimeout(autoConnect, 100);
+
+// ==========================================
+// BOL.COM CALCULATOR LOGIC (original)
+// ==========================================
+const BOL_CATEGORIES = [
+  { name: "Baby & Peuter", varPct: [4, 5, 5], highFixedFee: false, media: false },
+  { name: "Beauty & Gezondheid", varPct: [4, 8, 15], highFixedFee: false, media: false },
+  { name: "Boeken", varPct: [4, 10, 13], highFixedFee: false, media: true },
+  { name: "Computer & Elektronica", varPct: [4, 5, 8], highFixedFee: true, media: false },
+  { name: "Dier & Dierenbenodigdheden", varPct: [4, 8, 10], highFixedFee: false, media: false },
+  { name: "Film, Muziek & Games", varPct: [4, 8, 10], highFixedFee: false, media: true },
+  { name: "Huishouden & Wonen", varPct: [4, 8, 12], highFixedFee: false, media: false },
+  { name: "Kantoor & Schoolartikelen", varPct: [4, 8, 12], highFixedFee: false, media: false },
+  { name: "Kleding & Mode", varPct: [4, 10, 13], highFixedFee: false, media: false },
+  { name: "Klussen & Gereedschap", varPct: [4, 8, 10], highFixedFee: false, media: false },
+  { name: "Koken, Tafelen & Bak", varPct: [4, 8, 12], highFixedFee: false, media: false },
+  { name: "Sieraden & Horloges", varPct: [4, 10, 15], highFixedFee: false, media: false },
+  { name: "Speelgoed", varPct: [4, 8, 12.4], highFixedFee: false, media: false },
+  { name: "Sport & Vrije Tijd", varPct: [4, 8, 12], highFixedFee: false, media: false },
+  { name: "Tuin & Buiten", varPct: [4, 8, 12], highFixedFee: false, media: false },
+  { name: "TV, Witgoed & Grote Meubelen", varPct: [4, 5, 5], highFixedFee: true, media: false },
+  { name: "Overig", varPct: [4, 8, 12], highFixedFee: false, media: false },
+];
+
+// Bol.com vaste commissie (ex. BTW) based on selling price
+function getBolFixedFee(sellingPriceInclVat, isHighFee, isMedia) {
+  let fee = 0;
+  if (sellingPriceInclVat < 10) {
+    fee = 0.20;
+  } else if (sellingPriceInclVat < 20) {
+    fee = 0.40;
+  } else {
+    fee = isHighFee ? 2.48 : 0.85;
+  }
+  if (isMedia) fee += 1.00; // media toeslag
+  return fee;
+}
+
+// Bol.com variabel commissie % based on selling price and category
+function getBolVarPct(sellingPriceInclVat, category) {
+  const cat = BOL_CATEGORIES[category];
+  if (sellingPriceInclVat < 10) return cat.varPct[0];
+  if (sellingPriceInclVat < 20) return cat.varPct[1];
+  return cat.varPct[2];
+}
+
+function defaultProduct(index) {
+  return {
+    name: `Product ${index + 1}`,
+    category: 6,
+    purchasePrice: 8.00,
+    sellingPrice: 24.95,
+    vatRate: 21,
+    shippingToCustomer: 0,
+    shippingFromSupplier: 2.50,
+    useManualShipping: false,
+    cbmPerUnit: 0.005,
+    cbmPrice: 280,
+    customsDutyPct: 3,
+    customsHandlingFee: 25,
+    cbmOrderQty: 500,
+    packagingCost: 0.80,
+    returnRate: 10,
+    returnShippingCost: 4.50,
+    useLVB: false,
+    lvbStorageCostPerUnit: 0.50,
+    lvbHandlingFee: 2.95,
+    monthlyAdSpend: 50,
+    estimatedAdConvRate: 5,
+    estimatedMonthlySales: 60,
+    productionDays: 30,
+    shippingDays: 40,
+    bufferDays: 20,
+    currentStock: 0,
+  };
+}
+
+let state = {
+  products: [defaultProduct(0)],
+  activeProduct: 0,
+  globalBudget: 5000,
+};
+
+function calc(p) {
+  const cat = BOL_CATEGORIES[p.category];
+
+  // Revenue per unit (ex. VAT)
+  const sellingExVat = p.sellingPrice / (1 + p.vatRate / 100);
+
+  // Bol.com commission: fixed fee + variable %
+  const bolFixedFee = getBolFixedFee(p.sellingPrice, cat.highFixedFee, cat.media);
+  const bolVarPct = getBolVarPct(p.sellingPrice, p.category);
+  const bolVarFee = p.sellingPrice * (bolVarPct / 100); // variable is over incl. BTW price
+  const commission = bolFixedFee + bolVarFee;
+  const commissionPct = sellingExVat > 0 ? (commission / sellingExVat) * 100 : 0;
+
+  // CBM Shipping calculation
+  let shippingPerUnit;
+  if (p.useManualShipping) {
+    shippingPerUnit = p.shippingFromSupplier;
+  } else {
+    const totalCBM = p.cbmPerUnit * p.cbmOrderQty;
+    const seaFreight = totalCBM * p.cbmPrice;
+    const productValueTotal = p.purchasePrice * p.cbmOrderQty;
+    const customsDuty = productValueTotal * (p.customsDutyPct / 100);
+    const totalImportCost = seaFreight + customsDuty + p.customsHandlingFee;
+    shippingPerUnit = p.cbmOrderQty > 0 ? totalImportCost / p.cbmOrderQty : 0;
+  }
+
+  // CBM breakdown table data
+  const cbmBreakdown = [50, 100, 250, 500, 1000, 2000].map(qty => {
+    const totalCBM = p.cbmPerUnit * qty;
+    const seaFreight = totalCBM * p.cbmPrice;
+    const productValueTotal = p.purchasePrice * qty;
+    const customsDuty = productValueTotal * (p.customsDutyPct / 100);
+    const totalImportCost = seaFreight + customsDuty + p.customsHandlingFee;
+    const costPerUnit = qty > 0 ? totalImportCost / qty : 0;
+    const totalInvestment = (p.purchasePrice * qty) + totalImportCost;
+    return { qty, totalCBM, seaFreight, customsDuty, totalImportCost, costPerUnit, totalInvestment };
+  });
+
+  // Fulfilment per unit
+  let fulfilmentCost;
+  if (p.useLVB) {
+    fulfilmentCost = p.lvbHandlingFee + p.lvbStorageCostPerUnit;
+  } else {
+    fulfilmentCost = p.shippingToCustomer + p.packagingCost;
+  }
+
+  // Cost per unit sold
+  const costPerUnit = p.purchasePrice + shippingPerUnit + commission + fulfilmentCost;
+
+  // Return costs per unit (spread across all units)
+  const returnCostPerUnit = (p.returnRate / 100) * (p.returnShippingCost + fulfilmentCost);
+
+  // Total cost per unit
+  const totalCostPerUnit = costPerUnit + returnCostPerUnit;
+
+  // Profit per unit
+  const profitPerUnit = sellingExVat - totalCostPerUnit;
+  const marginPct = sellingExVat > 0 ? (profitPerUnit / sellingExVat) * 100 : 0;
+  const markupPct = totalCostPerUnit > 0 ? (profitPerUnit / totalCostPerUnit) * 100 : 0;
+
+  // Monthly
+  const monthlySales = p.estimatedMonthlySales;
+  const monthlyRevenue = sellingExVat * monthlySales;
+  const monthlyProfit = profitPerUnit * monthlySales - p.monthlyAdSpend;
+  const monthlyTotalCosts = totalCostPerUnit * monthlySales + p.monthlyAdSpend;
+
+  // Ad metrics
+  const costPerSaleFromAds = p.estimatedAdConvRate > 0 ? p.monthlyAdSpend / ((p.monthlyAdSpend / (p.sellingPrice * 0.03)) * (p.estimatedAdConvRate / 100)) : 0;
+  const acos = monthlyRevenue > 0 ? (p.monthlyAdSpend / monthlyRevenue) * 100 : 0;
+
+  // Investment analysis (uses global budget)
+  const budget = state.globalBudget;
+  const costPerUnitToBuy = p.purchasePrice + shippingPerUnit;
+  const unitsCanBuy = costPerUnitToBuy > 0 ? Math.floor(budget / costPerUnitToBuy) : 0;
+  const potentialRevenue = unitsCanBuy * sellingExVat;
+  const potentialProfit = unitsCanBuy * profitPerUnit;
+  const totalInvestmentNeeded = unitsCanBuy * costPerUnitToBuy;
+  const roi = totalInvestmentNeeded > 0 ? (potentialProfit / totalInvestmentNeeded) * 100 : 0;
+  const monthsToSell = monthlySales > 0 ? Math.ceil(unitsCanBuy / monthlySales) : Infinity;
+  const monthlyROI = monthsToSell > 0 && monthsToSell < Infinity ? roi / monthsToSell : 0;
+  const annualizedProfit = monthsToSell > 0 && monthsToSell < Infinity ? (potentialProfit / monthsToSell) * 12 : 0;
+  const capitalEfficiency = budget > 0 ? (annualizedProfit / budget) * 100 : 0;
+
+  // Break-even
+  const breakEvenPrice = totalCostPerUnit * (1 + p.vatRate / 100);
+
+  // Supply chain / inventory planning
+  const dailySales = monthlySales / 30;
+  const leadTimeDays = p.productionDays + p.shippingDays;
+  const totalCoverDays = leadTimeDays + p.bufferDays;
+  const minOrderQty = Math.ceil(dailySales * totalCoverDays);
+  const leadTimeUnits = Math.ceil(dailySales * leadTimeDays);
+  const bufferUnits = Math.ceil(dailySales * p.bufferDays);
+  const reorderPoint = Math.ceil(dailySales * (p.shippingDays + p.bufferDays));
+  const currentStockDays = dailySales > 0 ? Math.floor(p.currentStock / dailySales) : Infinity;
+  const daysUntilReorder = dailySales > 0 ? Math.max(0, Math.floor((p.currentStock - reorderPoint) / dailySales)) : Infinity;
+  const stockCoversLeadTime = p.currentStock >= minOrderQty;
+  const minOrderInvestment = minOrderQty * (p.purchasePrice + shippingPerUnit);
+
+  // Timeline breakdown
+  const timeline = [
+    { label: "Productie", days: p.productionDays, units: Math.ceil(dailySales * p.productionDays) },
+    { label: "Verzending", days: p.shippingDays, units: Math.ceil(dailySales * p.shippingDays) },
+    { label: "Buffer", days: p.bufferDays, units: bufferUnits },
+  ];
+
+  return {
+    commissionPct, commission, bolFixedFee, bolVarFee, bolVarPct,
+    sellingExVat, fulfilmentCost, shippingPerUnit,
+    costPerUnit, returnCostPerUnit, totalCostPerUnit,
+    profitPerUnit, marginPct, markupPct,
+    monthlySales, monthlyRevenue, monthlyProfit, monthlyTotalCosts,
+    acos, cbmBreakdown,
+    unitsCanBuy, potentialRevenue, potentialProfit, totalInvestmentNeeded,
+    roi, monthsToSell, monthlyROI, annualizedProfit, capitalEfficiency,
+    breakEvenPrice,
+    dailySales, leadTimeDays, totalCoverDays, minOrderQty,
+    leadTimeUnits, bufferUnits, reorderPoint,
+    currentStockDays, daysUntilReorder, stockCoversLeadTime,
+    minOrderInvestment, timeline,
+  };
+}
+
+function fmt(val, decimals = 2) {
+  return `€${val.toFixed(decimals)}`;
+}
+
+function fmtPct(val) {
+  return `${val.toFixed(1)}%`;
+}
+
+function renderAdviceCards(sorted, allResults) {
+  const best = sorted[0];
+  const bestMonthly = [...allResults].sort((a, b) => b.monthlyProfit - a.monthlyProfit)[0];
+  const bestCE = [...allResults].sort((a, b) => b.capitalEfficiency - a.capitalEfficiency)[0];
+
+  return '<div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px">'
+
+    + '<div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:20px">'
+    + '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--green);margin-bottom:8px;font-weight:600">🏆 Hoogste ROI</div>'
+    + '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">' + best.name + '</div>'
+    + '<div style="font-size:13px;color:var(--text-dim);line-height:1.6">'
+    + 'Met ' + fmt(state.globalBudget) + ' koop je <strong>' + best.unitsCanBuy + ' stuks</strong> in voor ' + fmt(best.totalInvestmentNeeded)
+    + '. Na verkoop levert dit <strong style="color:var(--green)">' + fmt(best.potentialProfit) + ' winst</strong> op (' + fmtPct(best.roi) + ' ROI). '
+    + (best.monthsToSell < Infinity ? 'Doorlooptijd: ~' + best.monthsToSell + ' maand(en).' : '')
+    + '</div></div>'
+
+    + '<div style="background:var(--accent-glow);border:1px solid rgba(0,102,255,0.2);border-radius:12px;padding:20px">'
+    + '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);margin-bottom:8px;font-weight:600">📈 Hoogste maandwinst</div>'
+    + '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">' + bestMonthly.name + '</div>'
+    + '<div style="font-size:13px;color:var(--text-dim);line-height:1.6">'
+    + 'Verwachte maandwinst van <strong style="color:var(--accent)">' + fmt(bestMonthly.monthlyProfit) + '</strong> bij ' + bestMonthly.monthlySales + ' verkopen/mnd. '
+    + 'Winstmarge: ' + fmtPct(bestMonthly.marginPct) + ' per stuk. '
+    + (bestMonthly.unitsCanBuy > 0 && bestMonthly.monthsToSell < Infinity ? 'Voorraad voor ~' + bestMonthly.monthsToSell + ' maand(en).' : '')
+    + '</div></div>'
+
+    + '<div style="background:rgba(156,136,255,0.08);border:1px solid rgba(156,136,255,0.2);border-radius:12px;padding:20px">'
+    + '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#9c88ff;margin-bottom:8px;font-weight:600">⚡ Snelst draaiend kapitaal</div>'
+    + '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">' + bestCE.name + '</div>'
+    + '<div style="font-size:13px;color:var(--text-dim);line-height:1.6">'
+    + '<strong style="color:#9c88ff">' + fmtPct(bestCE.capitalEfficiency) + ' geannualiseerd rendement</strong>. '
+    + (bestCE.monthsToSell < Infinity ? 'Voorraad verkocht in ' + bestCE.monthsToSell + ' maand(en), daarna kun je herinvesteren. ' : '')
+    + (bestCE.minOrderQty > 0 ? 'Min. bestelling voor voorraadplanning: ' + bestCE.minOrderQty + ' stuks.' : '')
+    + '</div></div>'
+
+    + '</div>';
+}
+
+function renderAdviceSummary(sorted, allResults) {
+  if (state.products.length <= 1) {
+    return '<div class="divider" style="margin:20px 0"></div>'
+      + '<div style="font-size:13px;color:var(--text-dim);line-height:1.8">'
+      + '<p>Met <strong style="color:var(--text)">' + fmt(state.globalBudget) + '</strong> kun je '
+      + '<strong style="color:var(--text)">' + sorted[0].unitsCanBuy + ' stuks</strong> van ' + sorted[0].name + ' inkopen '
+      + 'voor een verwachte winst van <strong style="color:var(--green)">' + fmt(sorted[0].potentialProfit) + '</strong>. '
+      + (sorted[0].monthsToSell < Infinity ? 'Doorlooptijd: ~' + sorted[0].monthsToSell + ' maand(en).' : '') + '</p>'
+      + '<p style="margin-top:8px;color:var(--text-muted)">Voeg meer producten toe om ze te vergelijken en het beste advies te krijgen.</p>'
+      + '</div>';
+  }
+
+  const best = sorted[0];
+  const runner = sorted.length > 1 ? sorted[1] : null;
+  const warnings = [];
+
+  allResults.forEach(function(item) {
+    if (item.profitPerUnit <= 0) {
+      warnings.push('🚫 <strong>' + item.name + '</strong> is verliesgevend (€' + item.profitPerUnit.toFixed(2) + '/stuk). Niet investeren.');
+    } else if (item.marginPct < 15) {
+      warnings.push('⚠️ <strong>' + item.name + '</strong> heeft een lage marge (' + item.marginPct.toFixed(1) + '%). Kwetsbaar bij prijsdruk of hogere retouren.');
+    }
+    if (item.minOrderQty > item.unitsCanBuy && item.profitPerUnit > 0) {
+      warnings.push('📦 <strong>' + item.name + '</strong>: je kunt ' + item.unitsCanBuy + ' stuks kopen maar hebt ' + item.minOrderQty + ' nodig om in stock te blijven.');
+    }
+  });
+
+  var html = '<div class="divider" style="margin:20px 0"></div>'
+    + '<div class="section-title">💡 Samenvatting & advies</div>'
+    + '<div style="font-size:13px;color:var(--text-dim);line-height:1.8;max-width:800px">'
+    + '<p style="margin-bottom:12px">Met een budget van <strong style="color:var(--text)">' + fmt(state.globalBudget) + '</strong> en ' + state.products.length + ' producten geanalyseerd:</p>'
+    + '<p style="margin-bottom:12px"><strong style="color:var(--green)">Aanbeveling:</strong> '
+    + 'Investeer primair in <strong style="color:var(--text)">' + best.name + '</strong> — '
+    + 'deze biedt ' + fmtPct(best.roi) + ' ROI met ' + fmt(best.potentialProfit) + ' potentiële winst op ' + best.unitsCanBuy + ' stuks. '
+    + (best.monthsToSell < Infinity && best.monthsToSell <= 3 ? 'De voorraad draait snel door, wat herinvestering mogelijk maakt. ' : '')
+    + (best.monthsToSell > 6 ? 'Let op: de doorlooptijd is lang. Overweeg een kleinere eerste bestelling. ' : '')
+    + '</p>';
+
+  if (runner && runner.profitPerUnit > 0) {
+    html += '<p style="margin-bottom:12px"><strong style="color:var(--accent)">Alternatief:</strong> '
+      + '<strong style="color:var(--text)">' + runner.name + '</strong> scoort ' + fmtPct(runner.roi) + ' ROI. '
+      + (runner.capitalEfficiency > best.capitalEfficiency ? 'Dit product draait sneller en kan op jaarbasis meer opleveren. ' : '')
+      + (runner.monthlyProfit > best.monthlyProfit ? 'De maandelijkse cashflow is hier hoger. ' : '')
+      + '</p>';
+  }
+
+  if (warnings.length > 0) {
+    html += '<div style="margin-top:12px"><strong style="color:var(--orange)">Waarschuwingen:</strong>'
+      + '<ul style="margin:8px 0 0 0;padding-left:0;list-style:none">'
+      + warnings.map(function(w) { return '<li style="padding:4px 0">' + w + '</li>'; }).join('')
+      + '</ul></div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const p = state.products[state.activeProduct];
+  const r = calc(p);
+
+  const allResults = state.products.map((prod, i) => ({ ...calc(prod), name: prod.name, index: i }));
+  const sorted = [...allResults].sort((a, b) => b.roi - a.roi);
+
+  app.innerHTML = `
+    <!-- Global Budget Bar -->
+    <div class="card" style="margin-bottom:20px;padding:18px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-color:var(--accent);background:linear-gradient(135deg, rgba(0,102,255,0.06), rgba(0,102,255,0.02))">
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <div class="card-icon" style="background:var(--accent);color:white;font-size:18px">💶</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">Totaal beschikbaar budget</div>
+          <div style="font-size:11px;color:var(--text-muted)">Wordt gebruikt voor alle productberekeningen</div>
+        </div>
+      </div>
+      <div class="input-wrap" style="max-width:220px;border-color:var(--accent)">
+        <span class="prefix" style="color:var(--accent)">€</span>
+        <input type="number" step="100" min="0" value="${state.globalBudget}" onchange="updGlobal('globalBudget', parseFloat(this.value)||0)" style="font-size:18px;font-weight:600">
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-left:auto">
+        <div style="text-align:center">
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">Producten</div>
+          <div style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text)">${state.products.length}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">Beste ROI</div>
+          <div style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--green)">${fmtPct(Math.max(...allResults.map(r => r.roi)))}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Tabs -->
+    <div class="product-tabs">
+      ${state.products.map((prod, i) => `
+        <button class="product-tab ${i === state.activeProduct ? 'active' : ''}" onclick="setActive(${i})">
+          ${prod.name}
+          ${state.products.length > 1 ? `<span class="remove-btn" onclick="event.stopPropagation();removeProduct(${i})">✕</span>` : ''}
+        </button>
+      `).join('')}
+      ${state.products.length < 6 ? `<button class="product-tab add" onclick="addProduct()">+ Product</button>` : ''}
+    </div>
+
+    <div class="main-grid">
+      <!-- LEFT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- Product Info -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:var(--accent-glow);color:var(--accent)">📦</div>
+            <div>
+              <h2>Product & Prijs</h2>
+              <div class="card-sub">Basisgegevens van je product</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Productnaam</label>
+            <div class="input-wrap">
+              <input type="text" value="${p.name}" onchange="upd('name', this.value)">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Bol.com categorie <span class="hint">vast ${fmt(r.bolFixedFee)} + ${r.bolVarPct}% var.</span></label>
+            <div class="input-wrap">
+              <select onchange="upd('category', parseInt(this.value))">
+                ${BOL_CATEGORIES.map((cat, i) => `<option value="${i}" ${i === p.category ? 'selected' : ''}>${cat.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Inkoopprijs <span class="hint">ex. BTW</span></label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input type="number" step="0.01" min="0" value="${p.purchasePrice}" onchange="upd('purchasePrice', parseFloat(this.value)||0)">
+              </div>
+            </div>
+            <div class="field">
+              <label>Verkoopprijs <span class="hint">incl. BTW</span></label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input type="number" step="0.01" min="0" value="${p.sellingPrice}" onchange="upd('sellingPrice', parseFloat(this.value)||0)">
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>BTW-tarief</label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" max="21" value="${p.vatRate}" onchange="upd('vatRate', parseFloat(this.value)||0)">
+                <span class="suffix">%</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Verzendkosten / stuk <span class="hint">${p.useManualShipping ? 'handmatig' : 'via CBM'}</span></label>
+              <div class="input-wrap" style="background:var(--bg-deep);border-color:${p.useManualShipping ? 'var(--border)' : 'var(--accent)'};cursor:default">
+                <span class="prefix">€</span>
+                <input type="text" readonly value="${r.shippingPerUnit.toFixed(2)}" style="cursor:default;color:var(--accent)">
+                <span class="suffix">/stuk</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CBM / Import Shipping -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(156,136,255,0.1);color:#9c88ff">🚢</div>
+            <div>
+              <h2>Import & Verzending (CBM)</h2>
+              <div class="card-sub">Bereken verzendkosten per stuk op basis van volume</div>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">Handmatig verzendkosten invoeren</span>
+            <button class="toggle ${p.useManualShipping ? 'active' : ''}" onclick="upd('useManualShipping', !${p.useManualShipping})"></button>
+          </div>
+
+          ${p.useManualShipping ? `
+            <div class="field">
+              <label>Verzendkosten per stuk <span class="hint">handmatig</span></label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input type="number" step="0.10" min="0" value="${p.shippingFromSupplier}" onchange="upd('shippingFromSupplier', parseFloat(this.value)||0)">
+                <span class="suffix">/stuk</span>
+              </div>
+            </div>
+          ` : `
+            <div class="field-row">
+              <div class="field">
+                <label>Volume per stuk <span class="hint">L×B×H in m³</span></label>
+                <div class="input-wrap">
+                  <input type="number" step="0.001" min="0" value="${p.cbmPerUnit}" onchange="upd('cbmPerUnit', parseFloat(this.value)||0)">
+                  <span class="suffix">CBM</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>CBM tarief <span class="hint">zeevracht per m³</span></label>
+                <div class="input-wrap">
+                  <span class="prefix">€</span>
+                  <input type="number" step="5" min="0" value="${p.cbmPrice}" onchange="upd('cbmPrice', parseFloat(this.value)||0)">
+                  <span class="suffix">/CBM</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label>Inkoophoeveelheid</label>
+                <div class="input-wrap">
+                  <input type="number" step="50" min="1" value="${p.cbmOrderQty}" onchange="upd('cbmOrderQty', parseFloat(this.value)||0)">
+                  <span class="suffix">stuks</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Invoerrechten <span class="hint">douane %</span></label>
+                <div class="input-wrap">
+                  <input type="number" step="0.5" min="0" max="100" value="${p.customsDutyPct}" onchange="upd('customsDutyPct', parseFloat(this.value)||0)">
+                  <span class="suffix">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Customs handling fee <span class="hint">vast bedrag per zending</span></label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input type="number" step="5" min="0" value="${p.customsHandlingFee}" onchange="upd('customsHandlingFee', parseFloat(this.value)||0)">
+              </div>
+            </div>
+
+            <!-- CBM Breakdown Table -->
+            <div class="section-title" style="margin-top:20px">Verzendkosten per hoeveelheid</div>
+            <div style="overflow-x:auto">
+              <table class="compare-table" style="margin-top:0">
+                <thead>
+                  <tr>
+                    <th>Stuks</th>
+                    <th>Totaal CBM</th>
+                    <th>Zeevracht</th>
+                    <th>Invoerrechten</th>
+                    <th>Totaal import</th>
+                    <th>Per stuk</th>
+                    <th>Totaal investering</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${r.cbmBreakdown.map(row => `
+                    <tr style="cursor:pointer;${row.qty === p.cbmOrderQty ? 'background:var(--accent-glow)' : ''}" onclick="upd('cbmOrderQty', ${row.qty})">
+                      <td style="font-family:'DM Sans',sans-serif;font-weight:${row.qty === p.cbmOrderQty ? '600' : '400'};${row.qty === p.cbmOrderQty ? 'color:var(--accent)' : ''}">${row.qty}×</td>
+                      <td>${row.totalCBM.toFixed(2)} m³</td>
+                      <td>${fmt(row.seaFreight)}</td>
+                      <td>${fmt(row.customsDuty)}</td>
+                      <td>${fmt(row.totalImportCost)}</td>
+                      <td style="font-weight:600;color:${row.qty === p.cbmOrderQty ? 'var(--accent)' : 'var(--text)'}">${fmt(row.costPerUnit)}</td>
+                      <td>${fmt(row.totalInvestment)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="callout" style="margin-top:12px">
+              <strong>${p.cbmOrderQty} stuks</strong> = ${(p.cbmPerUnit * p.cbmOrderQty).toFixed(2)} CBM → 
+              verzendkosten <strong>${fmt(r.shippingPerUnit)}/stuk</strong> 
+              (zeevracht + invoerrechten + handling)
+            </div>
+          `}
+        </div>
+
+        <!-- Fulfilment -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(0,214,143,0.1);color:var(--green)">🚚</div>
+            <div>
+              <h2>Verzending & Fulfilment</h2>
+              <div class="card-sub">LVB of eigen verzending</div>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">Logistiek via Bol (LVB)</span>
+            <button class="toggle ${p.useLVB ? 'active' : ''}" onclick="upd('useLVB', !${p.useLVB})"></button>
+          </div>
+
+          ${p.useLVB ? `
+            <div class="field-row">
+              <div class="field">
+                <label>LVB afhandelkosten</label>
+                <div class="input-wrap">
+                  <span class="prefix">€</span>
+                  <input type="number" step="0.05" min="0" value="${p.lvbHandlingFee}" onchange="upd('lvbHandlingFee', parseFloat(this.value)||0)">
+                  <span class="suffix">/stuk</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>LVB opslagkosten</label>
+                <div class="input-wrap">
+                  <span class="prefix">€</span>
+                  <input type="number" step="0.05" min="0" value="${p.lvbStorageCostPerUnit}" onchange="upd('lvbStorageCostPerUnit', parseFloat(this.value)||0)">
+                  <span class="suffix">/stuk/mnd</span>
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div class="field-row">
+              <div class="field">
+                <label>Verzendkosten naar klant</label>
+                <div class="input-wrap">
+                  <span class="prefix">€</span>
+                  <input type="number" step="0.10" min="0" value="${p.shippingToCustomer}" onchange="upd('shippingToCustomer', parseFloat(this.value)||0)">
+                  <span class="suffix">/stuk</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Verpakkingskosten</label>
+                <div class="input-wrap">
+                  <span class="prefix">€</span>
+                  <input type="number" step="0.05" min="0" value="${p.packagingCost}" onchange="upd('packagingCost', parseFloat(this.value)||0)">
+                  <span class="suffix">/stuk</span>
+                </div>
+              </div>
+            </div>
+          `}
+
+          <div class="field-row">
+            <div class="field">
+              <label>Retourpercentage</label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" max="100" value="${p.returnRate}" onchange="upd('returnRate', parseFloat(this.value)||0)">
+                <span class="suffix">%</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Retourverzendkosten</label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input type="number" step="0.50" min="0" value="${p.returnShippingCost}" onchange="upd('returnShippingCost', parseFloat(this.value)||0)">
+                <span class="suffix">/retour</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advertising -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(255,159,67,0.1);color:var(--orange)">📣</div>
+            <div>
+              <h2>Bol.com Advertenties</h2>
+              <div class="card-sub">Sponsored Products kosten</div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Maandelijks advertentiebudget</label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input type="number" step="10" min="0" value="${p.monthlyAdSpend}" onchange="upd('monthlyAdSpend', parseFloat(this.value)||0)">
+                <span class="suffix">/mnd</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Geschatte verkopen / maand</label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" value="${p.estimatedMonthlySales}" onchange="upd('estimatedMonthlySales', parseFloat(this.value)||0)">
+                <span class="suffix">stuks</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supply Chain / Inventory Planning -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(255,107,129,0.1);color:#ff6b81">📅</div>
+            <div>
+              <h2>Voorraadplanning</h2>
+              <div class="card-sub">Hoeveel inkopen om in stock te blijven?</div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Productietijd <span class="hint">bij leverancier</span></label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" value="${p.productionDays}" onchange="upd('productionDays', parseFloat(this.value)||0)">
+                <span class="suffix">dagen</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Verzendtijd <span class="hint">naar NL</span></label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" value="${p.shippingDays}" onchange="upd('shippingDays', parseFloat(this.value)||0)">
+                <span class="suffix">dagen</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Veiligheidsbuffer</label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" value="${p.bufferDays}" onchange="upd('bufferDays', parseFloat(this.value)||0)">
+                <span class="suffix">dagen</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Huidige voorraad</label>
+              <div class="input-wrap">
+                <input type="number" step="1" min="0" value="${p.currentStock}" onchange="upd('currentStock', parseFloat(this.value)||0)">
+                <span class="suffix">stuks</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Timeline -->
+          <div class="section-title">Doorlooptijd: ${r.totalCoverDays} dagen totaal</div>
+          <div class="timeline-bar">
+            ${r.timeline.map((seg, i) => {
+              const colors = ['#ff6b81', '#ff9f43', '#00d68f'];
+              const pct = r.totalCoverDays > 0 ? (seg.days / r.totalCoverDays) * 100 : 33;
+              return `<div class="timeline-segment" style="width:${pct}%;background:${colors[i]}">
+                <span class="seg-label">${seg.label}: ${seg.days}d</span>
+              </div>`;
+            }).join('')}
+          </div>
+
+          <!-- Stats -->
+          <div style="margin-top:16px">
+            <div class="mini-stat">
+              <span class="ms-label">Dagelijkse verkopen (gem.)</span>
+              <span class="ms-value">${r.dailySales.toFixed(1)} stuks/dag</span>
+            </div>
+            <div class="mini-stat">
+              <span class="ms-label">Productie (${p.productionDays}d)</span>
+              <span class="ms-value">${r.timeline[0].units} stuks nodig</span>
+            </div>
+            <div class="mini-stat">
+              <span class="ms-label">Verzending (${p.shippingDays}d)</span>
+              <span class="ms-value">${r.timeline[1].units} stuks nodig</span>
+            </div>
+            <div class="mini-stat">
+              <span class="ms-label">Buffer (${p.bufferDays}d)</span>
+              <span class="ms-value">${r.bufferUnits} stuks nodig</span>
+            </div>
+            <div class="mini-stat" style="border-top:2px solid var(--border);padding-top:12px;margin-top:4px">
+              <span class="ms-label" style="font-weight:600;color:var(--text)">Minimale bestelling</span>
+              <span class="ms-value" style="color:var(--accent);font-size:15px;font-weight:700">${r.minOrderQty} stuks</span>
+            </div>
+            <div class="mini-stat">
+              <span class="ms-label">Investering voor min. bestelling</span>
+              <span class="ms-value">${fmt(r.minOrderInvestment)}</span>
+            </div>
+            <div class="mini-stat">
+              <span class="ms-label">Herbestelpunt</span>
+              <span class="ms-value">${r.reorderPoint} stuks op voorraad</span>
+            </div>
+          </div>
+
+          <!-- Stock Status -->
+          ${p.currentStock > 0 ? `
+            <div class="stock-status ${r.currentStockDays > r.totalCoverDays ? 'ok' : r.currentStockDays > r.leadTimeDays ? 'warning' : 'danger'}">
+              <span style="font-size:18px">${r.currentStockDays > r.totalCoverDays ? '✅' : r.currentStockDays > r.leadTimeDays ? '⚠️' : '🚨'}</span>
+              <div>
+                <div style="font-weight:600">
+                  ${r.currentStockDays > r.totalCoverDays
+                    ? 'Voorraad is voldoende'
+                    : r.currentStockDays > r.leadTimeDays
+                    ? 'Binnenkort herbestellen!'
+                    : 'Nu bestellen — risico op out-of-stock!'}
+                </div>
+                <div style="font-size:12px;opacity:0.8;margin-top:2px">
+                  Huidige voorraad: ${p.currentStock} stuks = ${r.currentStockDays === Infinity ? '∞' : r.currentStockDays} dagen
+                  ${r.daysUntilReorder < Infinity && r.daysUntilReorder > 0
+                    ? ` · Herbestellen over ${r.daysUntilReorder} dagen`
+                    : r.daysUntilReorder === 0 ? ' · Herbestellen: NU' : ''}
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div class="callout" style="margin-top:12px">
+              Je moet minimaal <strong>${r.minOrderQty} stuks</strong> bestellen om ${r.totalCoverDays} dagen (productie + verzending + buffer) door te komen.
+              Dat kost <strong>${fmt(r.minOrderInvestment)}</strong> aan inkoop + verzending.
+            </div>
+          `}
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Results -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- Per Unit Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:${r.profitPerUnit >= 0 ? 'var(--green-bg)' : 'var(--red-bg)'};color:${r.profitPerUnit >= 0 ? 'var(--green)' : 'var(--red)'}">
+              ${r.profitPerUnit >= 0 ? '✓' : '✗'}
+            </div>
+            <div>
+              <h2>Winst per stuk</h2>
+              <div class="card-sub">Uitsplitsing per verkocht product</div>
+            </div>
+          </div>
+
+          <div class="waterfall">
+            ${[
+              { label: "Verkoopprijs ex. BTW", amount: r.sellingExVat, color: "var(--green)", pct: 100 },
+              { label: "– Inkoopprijs", amount: -p.purchasePrice, color: "var(--red)", pct: (p.purchasePrice / r.sellingExVat) * 100 },
+              { label: `– Import/verzending ${p.useManualShipping ? '' : '(CBM)'}`, amount: -r.shippingPerUnit, color: "#9c88ff", pct: (r.shippingPerUnit / r.sellingExVat) * 100 },
+              { label: `– Bol vast tarief`, amount: -r.bolFixedFee, color: "var(--orange)", pct: (r.bolFixedFee / r.sellingExVat) * 100 },
+              { label: `– Bol commissie (${r.bolVarPct}%)`, amount: -r.bolVarFee, color: "var(--orange)", pct: (r.bolVarFee / r.sellingExVat) * 100 },
+              { label: `– Fulfilment ${p.useLVB ? '(LVB)' : '(eigen)'}`, amount: -r.fulfilmentCost, color: "#3498db", pct: (r.fulfilmentCost / r.sellingExVat) * 100 },
+              { label: "– Retourkosten (gem.)", amount: -r.returnCostPerUnit, color: "var(--red)", pct: (r.returnCostPerUnit / r.sellingExVat) * 100 },
+            ].map(row => `
+              <div class="waterfall-row">
+                <div class="waterfall-label">${row.label}</div>
+                <div class="waterfall-bar-wrap">
+                  <div class="waterfall-bar" style="width:${Math.min(Math.abs(row.pct), 100)}%;background:${row.color};opacity:0.7"></div>
+                </div>
+                <div class="waterfall-amount" style="color:${row.amount >= 0 ? 'var(--green)' : 'var(--text-dim)'}">
+                  ${row.amount >= 0 ? '+' : ''}${fmt(row.amount)}
+                </div>
+              </div>
+            `).join('')}
+            <div class="waterfall-row" style="border-top:2px solid var(--border);padding-top:14px;margin-top:4px">
+              <div class="waterfall-label" style="font-weight:600;color:var(--text)">Winst per stuk</div>
+              <div class="waterfall-bar-wrap">
+                <div class="waterfall-bar" style="width:${Math.min(Math.abs(r.marginPct), 100)}%;background:${r.profitPerUnit >= 0 ? 'var(--green)' : 'var(--red)'};opacity:0.9"></div>
+              </div>
+              <div class="waterfall-amount" style="font-weight:700;font-size:15px;color:${r.profitPerUnit >= 0 ? 'var(--green)' : 'var(--red)'}">
+                ${fmt(r.profitPerUnit)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI's -->
+        <div class="kpi-grid">
+          <div class="kpi ${r.roi >= 0 ? 'positive' : 'negative'}">
+            <div class="kpi-label">ROI op investering</div>
+            <div class="kpi-value" style="color:${r.roi >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtPct(r.roi)}</div>
+            <div class="kpi-sub">${r.unitsCanBuy} stuks te kopen</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Winstmarge</div>
+            <div class="kpi-value" style="color:${r.marginPct >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtPct(r.marginPct)}</div>
+            <div class="kpi-sub">netto op verkoopprijs</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Maandwinst</div>
+            <div class="kpi-value" style="color:${r.monthlyProfit >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(r.monthlyProfit)}</div>
+            <div class="kpi-sub">${r.monthlySales} verkopen – ${fmt(p.monthlyAdSpend)} ads</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">ACoS</div>
+            <div class="kpi-value" style="color:${r.acos < r.marginPct ? 'var(--green)' : 'var(--red)'}">${fmtPct(r.acos)}</div>
+            <div class="kpi-sub">advertentiekosten / omzet</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Break-even prijs</div>
+            <div class="kpi-value">${fmt(r.breakEvenPrice)}</div>
+            <div class="kpi-sub">min. verkoopprijs incl. BTW</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Potentiële winst</div>
+            <div class="kpi-value" style="color:${r.potentialProfit >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(r.potentialProfit)}</div>
+            <div class="kpi-sub">${r.unitsCanBuy} stuks × ${fmt(r.profitPerUnit)}</div>
+          </div>
+        </div>
+
+        <!-- Monthly Projection -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:var(--accent-glow);color:var(--accent)">📈</div>
+            <div>
+              <h2>Maandoverzicht</h2>
+              <div class="card-sub">Verwachte maandelijkse cijfers</div>
+            </div>
+          </div>
+          <div class="waterfall">
+            ${[
+              { label: "Omzet (ex. BTW)", val: r.monthlyRevenue, color: "var(--green)" },
+              { label: "Inkoopkosten", val: -(p.purchasePrice + r.shippingPerUnit) * r.monthlySales, color: "var(--red)" },
+              { label: "Bol.com kosten (vast + var.)", val: -r.commission * r.monthlySales, color: "var(--orange)" },
+              { label: "Fulfilment", val: -r.fulfilmentCost * r.monthlySales, color: "var(--orange)" },
+              { label: "Retourkosten", val: -r.returnCostPerUnit * r.monthlySales, color: "var(--red)" },
+              { label: "Advertentiekosten", val: -p.monthlyAdSpend, color: "var(--orange)" },
+            ].map(row => `
+              <div class="waterfall-row">
+                <div class="waterfall-label">${row.label}</div>
+                <div class="waterfall-bar-wrap">
+                  <div class="waterfall-bar" style="width:${Math.min((Math.abs(row.val) / Math.max(r.monthlyRevenue, 1)) * 100, 100)}%;background:${row.color};opacity:0.7"></div>
+                </div>
+                <div class="waterfall-amount" style="color:${row.val >= 0 ? 'var(--green)' : 'var(--text-dim)'}">
+                  ${row.val >= 0 ? '+' : ''}${fmt(row.val)}
+                </div>
+              </div>
+            `).join('')}
+            <div class="waterfall-row" style="border-top:2px solid var(--border);padding-top:14px;margin-top:4px">
+              <div class="waterfall-label" style="font-weight:600;color:var(--text)">Netto maandwinst</div>
+              <div></div>
+              <div class="waterfall-amount" style="font-weight:700;font-size:16px;color:${r.monthlyProfit >= 0 ? 'var(--green)' : 'var(--red)'}">
+                ${fmt(r.monthlyProfit)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Investment Advisor (always visible, full width) -->
+      <div class="card results-panel">
+        <div class="card-header">
+          <div class="card-icon" style="background:linear-gradient(135deg,var(--accent),#0044cc);color:white;font-size:16px">🧠</div>
+          <div>
+            <h2>Investeringsadvies</h2>
+            <div class="card-sub">Analyse op basis van ${fmt(state.globalBudget)} beschikbaar budget</div>
+          </div>
+        </div>
+
+        ${state.products.length > 1 ? `
+          <!-- Ranking Table -->
+          <div style="overflow-x:auto">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Product</th>
+                  <th>Inkoop + Verz.</th>
+                  <th>Winst/stuk</th>
+                  <th>Marge</th>
+                  <th>Te kopen</th>
+                  <th>Investering</th>
+                  <th>Potentiële winst</th>
+                  <th>ROI</th>
+                  <th>Doorlooptijd</th>
+                  <th>Geann. rendement</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sorted.map((item, rank) => {
+                  const isBest = rank === 0 && sorted.length > 1;
+                  const isWorst = rank === sorted.length - 1 && sorted.length > 1;
+                  const p2 = state.products[item.index];
+                  return `
+                    <tr style="cursor:pointer;${item.index === state.activeProduct ? 'background:var(--accent-glow)' : ''}" onclick="setActive(${item.index})">
+                      <td><span class="rank-badge rank-${Math.min(rank + 1, 3)}">${rank + 1}</span></td>
+                      <td style="font-family:'DM Sans',sans-serif;font-weight:500;${item.index === state.activeProduct ? 'color:var(--accent)' : ''}">${item.name}</td>
+                      <td>${fmt(p2.purchasePrice)} + ${fmt(item.shippingPerUnit)}</td>
+                      <td class="${isBest ? 'best' : isWorst ? 'worst' : ''}">${fmt(item.profitPerUnit)}</td>
+                      <td>${fmtPct(item.marginPct)}</td>
+                      <td style="font-weight:600">${item.unitsCanBuy}×</td>
+                      <td>${fmt(item.totalInvestmentNeeded)}</td>
+                      <td style="color:${item.potentialProfit >= 0 ? 'var(--green)' : 'var(--red)'}; font-weight:600">${fmt(item.potentialProfit)}</td>
+                      <td class="${isBest ? 'best' : isWorst ? 'worst' : ''}" style="font-weight:700">${fmtPct(item.roi)}</td>
+                      <td>${item.monthsToSell < Infinity ? item.monthsToSell + ' mnd' : '–'}</td>
+                      <td style="color:${item.capitalEfficiency >= 0 ? 'var(--green)' : 'var(--red)'}">${fmtPct(item.capitalEfficiency)}/jr</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+
+        <!-- Advice Cards -->
+        ${renderAdviceCards(sorted, allResults)}
+
+        <!-- Detailed Budget Allocation Advice -->
+        ${renderAdviceSummary(sorted, allResults)}
+      </div>
+    </div>
+  `;
+}
+
+function updGlobal(key, value) {
+  state[key] = value;
+  render();
+  triggerAutoSave();
+}
+
+function upd(key, value) {
+  state.products[state.activeProduct][key] = value;
+  render();
+  triggerAutoSave();
+}
+
+function setActive(index) {
+  state.activeProduct = index;
+  render();
+}
+
+function addProduct() {
+  const newP = defaultProduct(state.products.length);
+  newP.name = `Product ${state.products.length + 1}`;
+  state.products.push(newP);
+  state.activeProduct = state.products.length - 1;
+  render();
+  triggerAutoSave();
+}
+
+function removeProduct(index) {
+  if (state.products.length <= 1) return;
+  state.products.splice(index, 1);
+  if (state.activeProduct >= state.products.length) state.activeProduct = state.products.length - 1;
+  render();
+  triggerAutoSave();
+}
+
+render();
+</script>
+</body>
+</html>
