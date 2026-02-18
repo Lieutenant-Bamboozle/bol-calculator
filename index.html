@@ -884,8 +884,8 @@
 // ==========================================
 
 const dbState = {
-  url: localStorage.getItem('sb_url') || '',
-  key: localStorage.getItem('sb_key') || '',
+  url: 'https://wvgdzpcxwydgjglyzvzi.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Z2R6cGN4d3lkZ2pnbHl6dnppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NDAyMDMsImV4cCI6MjA4NzAxNjIwM30.O8Tqx60jMje0-i5dIFyv_y4yKybzi6hTrvRFlNk-zGM',
   connected: false,
   currentSessionId: null,
   sessionName: 'Mijn berekening',
@@ -949,8 +949,6 @@ async function connectSupabase() {
     await sbFetch('calculator_sessions?select=id&limit=1');
     
     // Save credentials
-    localStorage.setItem('sb_url', url);
-    localStorage.setItem('sb_key', key);
     dbState.connected = true;
     
     updateDbUI();
@@ -965,10 +963,6 @@ async function connectSupabase() {
 }
 
 function testAndDisconnect() {
-  localStorage.removeItem('sb_url');
-  localStorage.removeItem('sb_key');
-  dbState.url = '';
-  dbState.key = '';
   dbState.connected = false;
   dbState.currentSessionId = null;
   updateDbUI();
