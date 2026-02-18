@@ -1484,7 +1484,8 @@ function calc(p) {
   // Investment analysis (uses global budget)
   const budget = state.globalBudget;
   const costPerUnitToBuy = p.purchasePrice + shippingPerUnit;
-  const unitsCanBuy = costPerUnitToBuy > 0 ? Math.floor(budget / costPerUnitToBuy) : 0;
+  const maxFromBudget = costPerUnitToBuy > 0 ? Math.floor(budget / costPerUnitToBuy) : 0;
+  const unitsCanBuy = Math.min(maxFromBudget, p.cbmOrderQty);
   const potentialRevenue = unitsCanBuy * sellingExVat;
   const potentialProfit = unitsCanBuy * profitPerUnit;
   const totalInvestmentNeeded = unitsCanBuy * costPerUnitToBuy;
@@ -1763,12 +1764,21 @@ function render() {
           </div>
 
           ${p.useManualShipping ? `
-            <div class="field">
-              <label>Verzendkosten per stuk <span class="hint">handmatig</span></label>
-              <div class="input-wrap">
-                <span class="prefix">€</span>
-                <input type="number" step="0.10" min="0" value="${p.shippingFromSupplier}" onchange="upd('shippingFromSupplier', parseFloat(this.value)||0)">
-                <span class="suffix">/stuk</span>
+            <div class="field-row">
+              <div class="field">
+                <label>Verzendkosten per stuk <span class="hint">handmatig</span></label>
+                <div class="input-wrap">
+                  <span class="prefix">€</span>
+                  <input type="number" step="0.10" min="0" value="${p.shippingFromSupplier}" onchange="upd('shippingFromSupplier', parseFloat(this.value)||0)">
+                  <span class="suffix">/stuk</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Inkoophoeveelheid <span class="hint">max. te kopen</span></label>
+                <div class="input-wrap">
+                  <input type="number" step="50" min="1" value="${p.cbmOrderQty}" onchange="upd('cbmOrderQty', parseFloat(this.value)||0)">
+                  <span class="suffix">stuks</span>
+                </div>
               </div>
             </div>
           ` : `
